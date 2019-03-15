@@ -29,7 +29,7 @@ fn main() -> Result<(), Box<Error>> {
 
 
     // generate html file
-    let template = include_str!("../static/template.html");
+    let template = include_str!("../static/template.hbs");
     let hb = Handlebars::new();
     let html = hb.render_template(template, &config)?;
     let mut htmlfile = File::create(&config.html_path)?;
