@@ -44,7 +44,6 @@ fn login(base_url: Url, username: &str, password: &str) -> Result<Client, Box<Er
         let s: &str = &sc2[..sc2.find(";").unwrap()+1];
         cookies = cookies + s;
     }
-    println!("Logged in!");
     let mut headers = HeaderMap::new();
     headers.insert(COOKIE, cookies.parse()?);
     let client = reqwest::Client::builder().default_headers(headers).build()?;
@@ -61,9 +60,7 @@ pub fn set_wifi_psk(base_url: Url, site: &str, username: &str, password: &str, w
         println!("{:?}", result.text());    
         return Err(Box::new(AuthenticationError))
     }
-    println!("Changed password!");
     client.get(base_url.join("/logout")?).send()?;
-    println!("Logged out!");
     Ok(())
 }
 
