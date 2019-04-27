@@ -1,7 +1,6 @@
 use crate::config::Config;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Instant;
 use std::time;
 use crate::pwgen::generate_password;
 use crate::qrwifi::create_wifi_qrcode;
@@ -32,15 +31,15 @@ impl Runner {
         let output_copy = this.output.clone();
         thread::spawn(move || {
             loop {
-                let sleep_dur = time::Duration::from_secs(this.config.renew_duration_secs);
                 // TODO: remove the unwrap
-                this.next_update_at = Utc::now() + Duration::from_std(sleep_dur).unwrap();
+                // add 30 secs here so server has time to update
+                this.next_update_at = Utc::now() + Duration::from_std(time::Duration::from_secs(this.config.renew_duration_secs + 30)).unwrap();
                 if let Err(e) = this.update() {
                     let mut output = this.output.lock().unwrap();
                     // TODO: nice error formatting
                     *output = format!("{}", e);
                 }
-                thread::sleep(sleep_dur);
+                thread::sleep(time::Duration::from_secs(this.config.renew_duration_secs));
             }
         });
         Ok(output_copy)

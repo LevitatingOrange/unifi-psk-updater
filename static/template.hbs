@@ -24,9 +24,26 @@
             "<span style="font-family: 'Roboto Mono', monospace;">{{config.ssid}}</span>" <br>
             and enter the passphrase <br>
             "<span style="font-family: 'Roboto Mono', monospace;">{{psk}}</span>" <br>
-            manually. <br>
-            <span style="font-style: italic">The passphrase will change at {{next_update_at}} UTC. </span> 
+            manually. The passphrase will change in  <br> 
+            <span id="timer" style="font-family: 'Roboto Mono', monospace;"></span>. 
         </div>
     </div>
+    <script>
+        var span = document.getElementById('timer');
+        var end = Date.parse("{{next_update_at}}");
+
+        function timer() {
+            var now = new Date();
+            var diff = (end - now)/1000;
+            var h = ("" + Math.floor(diff / 3600)).padStart(2, '0');
+            var m = ("" + Math.floor(diff % 3600 / 60)).padStart(2, '0');
+            var s = ("" + Math.floor(diff % 3600 % 60)).padStart(2, '0');
+            if (diff <= 0) {
+                 location.reload();
+            }
+            span.textContent = h + ":" + m + ":" + s;
+        }
+        setInterval(timer, 1000);
+    </script>
 </body>
 </html>
