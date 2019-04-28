@@ -7,7 +7,7 @@ WORKDIR /wifi-pw-gen
 
 # copy over your manifests
 COPY ./Cargo.lock ./Cargo.lock
-COPY ./Cargo.toml ./Cargo.toml
+#COPY ./Cargo.toml ./Cargo.toml
 
 # this build step will cache your dependencies
 RUN cargo build --release
