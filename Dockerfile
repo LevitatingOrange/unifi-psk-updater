@@ -15,7 +15,7 @@ RUN rm src/*.rs
 
 # copy your source tree
 COPY ./src ./src
-
+COPY ./example_conf.toml /example_conf.toml
 # build for release
 #RUN rm ./target/release/deps/wifi-pw-gen*
 RUN cargo build --release
@@ -26,7 +26,7 @@ FROM rust:1.23
 # copy the build artifact from the build stage
 COPY --from=build /wifi-pw-gen/target/release/wifi-pw-gen .
 
-ENV CONFIG_PATH /wifi-config
+ENV CONFIG_PATH /example_conf.toml
 
 # set the startup command to run your binary
 CMD ["./wifi-pw-gen" "$CONFIG_PATH"]
