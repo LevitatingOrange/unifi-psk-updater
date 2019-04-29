@@ -1,5 +1,5 @@
 [package]
-name = "wifi-pw-gen"
+name = "unifi-psk-updater"
 version = "0.1.0"
 authors = ["Lennart Vogelsang <lennart@vogelsang.berlin>"]
 edition = "2018"
