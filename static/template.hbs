@@ -27,10 +27,22 @@
             manually. The passphrase will change in  <br> 
             <span id="timer" style="font-family: 'Roboto Mono', monospace;"></span>. 
         </div>
+        <button onclick="renew()">Renew passphrase manually</button>
     </div>
     <script>
         var span = document.getElementById('timer');
         var end = Date.parse("{{next_update_at}}");
+
+        function renew(event) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("POST", location.href, true);
+            xmlHttp.send( null );
+            setInterval(reload, 1000);
+        }
+
+        function reload() {
+            location.reload();
+        }
 
         function timer() {
             var now = new Date();

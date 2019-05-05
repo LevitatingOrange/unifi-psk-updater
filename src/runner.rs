@@ -1,5 +1,6 @@
 use crate::config::Config;
 use std::sync::{Arc, Mutex};
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::thread;
 use std::time;
 use crate::pwgen::generate_password;
@@ -10,6 +11,11 @@ use url::Url;
 use handlebars::{Handlebars, no_escape};
 use serde::Serialize;
 use chrono::{Utc, DateTime, Duration};
+
+#[derive(Debug, Clone, Copy)]
+pub enum Msg {
+    Renew
+}
 
 #[derive(Serialize, Debug)]
 pub struct Runner {
@@ -22,12 +28,15 @@ pub struct Runner {
     constant_psk: bool,
     psk: String,
     next_update_at: DateTime<Utc>,
+    #[serde(skip_serializing)]
+    notify: Receiver<Msg>,
 }
 
 
 impl Runner {
-    pub fn spawn(config: Config) -> Result<Arc<Mutex<String>>, Box<Error>> {
-        let mut this = Self::new(config)?;
+    pub fn spawn(config: Config) -> Result<(Arc<Mutex<String>>, Sender<Msg>), Box<Error>> {
+        let (tx, rx): (Sender<Msg>, Receiver<Msg>) = channel();
+        let mut this = Self::new(config, rx)?;
         let output_copy = this.output.clone();
         thread::spawn(move || {
             loop {
@@ -39,13 +48,25 @@ impl Runner {
                     // TODO: nice error formatting
                     *output = format!("{}", e);
                 }
-                thread::sleep(time::Duration::from_secs(this.config.renew_duration_secs));
+                let mut duration = time::Duration::from_secs(this.config.renew_duration_secs);
+                loop {
+                    if let Ok(msg) = this.notify.try_recv() {
+                        match msg {
+                            Msg::Renew => break
+                        };
+                    }
+                    if duration <= time::Duration::from_secs(0) {
+                        break;
+                    }
+                    thread::sleep(time::Duration::from_secs(1));
+                    duration -= time::Duration::from_secs(1);
+                }
             }
         });
-        Ok(output_copy)
+        Ok((output_copy, tx))
     }
 
-    fn new(config: Config) -> Result<Self, Box<Error>> {
+    fn new(config: Config, rx: Receiver<Msg>) -> Result<Self, Box<Error>> {
         let constant_psk = config.psk.is_some();
         let mut handlebars = Handlebars::new();
         handlebars.register_template_string("qrtemplate", include_str!("../static/template.hbs"))?;
@@ -58,6 +79,7 @@ impl Runner {
             constant_psk,
             psk: String::new(),
             next_update_at: Utc::now(),
+            notify: rx,
         })
     }
 
@@ -70,7 +92,7 @@ impl Runner {
         };
 
         // generate qrcode file
-        self.qrcode = create_wifi_qrcode(&self.config.ssid, &self.psk, self.config.svg_width, self.config.svg_height);
+        self.qrcode = create_wifi_qrcode(&self.config.ssid, &self.psk, self.config.svg_width, self.config.svg_height, Some(&self.config.svg_path));
         
         // generate html file
         let mut output = self.output.lock().unwrap();

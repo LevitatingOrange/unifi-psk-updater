@@ -9,3 +9,4 @@ svg_width = 200
 svg_height = 200
 renew_duration_secs = 120
 host = "127.0.0.1:3000"
+svg_path = "./wifi.svg"

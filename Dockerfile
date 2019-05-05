@@ -9,11 +9,13 @@ WORKDIR /unifi-psk-updater
 COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
 
-# copy your source tree
+# build dependencies by creating dummy file
+RUN echo "fn main(){println!(\"Hello World\");}" > src/main.rs && cargo build --release
+# remove dummy
+RUN rm -r src/
+
 COPY ./src ./src
 COPY ./static ./static
-# build for release
-#RUN rm ./target/release/deps/unifi-psk-updater*
 
 RUN cargo build --release
 

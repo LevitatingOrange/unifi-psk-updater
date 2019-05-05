@@ -14,6 +14,7 @@ pub struct Config {
     pub psk: Option<String>,
     pub renew_duration_secs: u64,
     pub host: String,
+    pub svg_path: String,
 }
 
 impl Default for Config {
@@ -31,6 +32,7 @@ impl Default for Config {
             renew_duration_secs: 1440,
             psk: None,
             host: "127.0.0.1:3000".to_owned(),
+            svg_path: "./wifi.svg".to_owned()
         }
     }
 }
